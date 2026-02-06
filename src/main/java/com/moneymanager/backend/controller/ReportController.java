@@ -42,12 +42,12 @@ public class ReportController {
                 .sum();
 
         Map<String, Double> expenseCategories = all.stream()
-                .filter(t -> t.getType() == TransactionType.EXPENSE)
+                .filter(t -> t.getType() == TransactionType.EXPENSE && t.getCategory() != null)
                 .collect(Collectors.groupingBy(Transaction::getCategory,
                         Collectors.summingDouble(Transaction::getAmount)));
 
         Map<String, Double> incomeCategories = all.stream()
-                .filter(t -> t.getType() == TransactionType.INCOME)
+                .filter(t -> t.getType() == TransactionType.INCOME && t.getCategory() != null)
                 .collect(Collectors.groupingBy(Transaction::getCategory,
                         Collectors.summingDouble(Transaction::getAmount)));
 
@@ -83,6 +83,7 @@ public class ReportController {
         List<Transaction> transactions = transactionService.filterTransactions(null, null, start, LocalDateTime.now());
 
         return transactions.stream()
+                .filter(t -> t.getTimestamp() != null)
                 .collect(Collectors.groupingBy(t -> t.getTimestamp().toLocalDate(), Collectors.toList()))
                 .entrySet().stream()
                 .map(entry -> {

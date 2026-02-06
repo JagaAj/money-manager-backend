@@ -115,16 +115,36 @@ public class TransactionService {
     }
 
     public List<Transaction> getAllTransactions() {
-        return transactionRepository.findAll();
+        return transactionRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    if (a.getTimestamp() == null && b.getTimestamp() == null)
+                        return 0;
+                    if (a.getTimestamp() == null)
+                        return 1;
+                    if (b.getTimestamp() == null)
+                        return -1;
+                    return b.getTimestamp().compareTo(a.getTimestamp());
+                })
+                .collect(Collectors.toList());
     }
 
     public List<Transaction> filterTransactions(Division division, String category, LocalDateTime start,
             LocalDateTime end) {
         return transactionRepository.findAll().stream()
                 .filter(t -> division == null || t.getDivision() == division)
-                .filter(t -> category == null || t.getCategory().equalsIgnoreCase(category))
-                .filter(t -> start == null || t.getTimestamp().isAfter(start))
-                .filter(t -> end == null || t.getTimestamp().isBefore(end))
+                .filter(t -> category == null
+                        || (t.getCategory() != null && t.getCategory().equalsIgnoreCase(category)))
+                .filter(t -> start == null || (t.getTimestamp() != null && !t.getTimestamp().isBefore(start)))
+                .filter(t -> end == null || (t.getTimestamp() != null && !t.getTimestamp().isAfter(end)))
+                .sorted((a, b) -> {
+                    if (a.getTimestamp() == null && b.getTimestamp() == null)
+                        return 0;
+                    if (a.getTimestamp() == null)
+                        return 1;
+                    if (b.getTimestamp() == null)
+                        return -1;
+                    return b.getTimestamp().compareTo(a.getTimestamp());
+                })
                 .collect(Collectors.toList());
     }
 }
